@@ -29,6 +29,12 @@ import org.objectweb.asm.ClassVisitor;
  */
 public class ASMUtil
 {
+    public static void visitClass(InputStream stream, ClassVisitor visitor, int flags) throws IOException
+    {
+        ClassReader creader = new ClassReader(stream);
+        creader.accept(visitor,flags);
+    }
+
     public static void visitClassFile(File classFile, ClassVisitor visitor, int flags) throws IOException
     {
         FileInputStream fin = null;
@@ -44,11 +50,5 @@ public class ASMUtil
         {
             IO.close(fin);
         }
-    }
-
-    public static void visitClass(InputStream stream, ClassVisitor visitor, int flags) throws IOException
-    {
-        ClassReader creader = new ClassReader(stream);
-        creader.accept(visitor,flags);
     }
 }

@@ -26,22 +26,6 @@ import java.util.zip.ZipFile;
  */
 public abstract class AbstractArchiveScanningRule extends AbstractRule
 {
-    public abstract String getDescription();
-
-    public abstract String getName();
-
-    @Override
-    public void visitWebInfLibJar(String path, File archive, JarFile jar)
-    {
-        scanClassesInArchive(path,jar);
-    }
-
-    @Override
-    public void visitWebInfLibZip(String path, File archive, ZipFile zip)
-    {
-        scanClassesInArchive(path,zip);
-    }
-
     private String asClassname(String path)
     {
         StringBuffer name = new StringBuffer();
@@ -63,6 +47,12 @@ public abstract class AbstractArchiveScanningRule extends AbstractRule
         return name.toString();
     }
 
+    @Override
+    public abstract String getDescription();
+
+    @Override
+    public abstract String getName();
+
     private void scanClassesInArchive(String path, ZipFile zip)
     {
         String className;
@@ -82,13 +72,25 @@ public abstract class AbstractArchiveScanningRule extends AbstractRule
         }
     }
 
+    public void visitArchiveClass(String path, String className, ZipFile archive, ZipEntry archiveEntry)
+    {
+        /* override to do something with */
+    }
+
     public void visitArchiveResource(String path, ZipFile zip, ZipEntry entry)
     {
         /* override to do something with */
     }
 
-    public void visitArchiveClass(String path, String className, ZipFile archive, ZipEntry archiveEntry)
+    @Override
+    public void visitWebInfLibJar(String path, File archive, JarFile jar)
     {
-        /* override to do something with */
+        scanClassesInArchive(path,jar);
+    }
+
+    @Override
+    public void visitWebInfLibZip(String path, File archive, ZipFile zip)
+    {
+        scanClassesInArchive(path,zip);
     }
 }

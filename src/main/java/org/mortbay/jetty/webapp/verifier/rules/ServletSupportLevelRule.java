@@ -39,13 +39,11 @@ import org.xml.sax.SAXException;
  */
 public class ServletSupportLevelRule extends AbstractRule
 {
-    private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
-
     class ServletId
     {
-        String version;
         String name;
         String type;
+        String version;
 
         public ServletId(String version, String type, String name)
         {
@@ -56,12 +54,14 @@ public class ServletSupportLevelRule extends AbstractRule
         }
     }
 
-    private String supportedVersion = "2.5";
-    private String fileSep = System.getProperty("file.separator","/");
+    private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
+
     private List<ServletId> dtdPublicIds = new ArrayList<ServletId>();
     private List<ServletId> dtdSystemIds = new ArrayList<ServletId>();
+    private String fileSep = System.getProperty("file.separator","/");
     private List<ServletId> nsIds = new ArrayList<ServletId>();
     private List<ServletId> schemaIds = new ArrayList<ServletId>();
+    private String supportedVersion = "2.5";
     private String validVersions[] =
     { "2.5", "2.4", "2.3", "2.2" };
 
@@ -82,136 +82,6 @@ public class ServletSupportLevelRule extends AbstractRule
         // Servlet 2.2
         dtdPublicIds.add(new ServletId("2.2","DOCTYPE Public ID","-//Sun Microsystems, Inc.//DTD WebApplication 2.2//EN"));
         dtdSystemIds.add(new ServletId("2.2","DOCTYPE System ID","http://java.sun.com/j2ee/dtds/web-app_2.2.dtd"));
-    }
-
-    public String getDescription()
-    {
-        return "Ensure webapp works within supported servlet spec";
-    }
-
-    public String getName()
-    {
-        return "servlet-support-level";
-    }
-
-    public String getSupportedVersion()
-    {
-        return supportedVersion;
-    }
-
-    public void setSupportedVersion(String supportedLevel)
-    {
-        this.supportedVersion = supportedLevel;
-    }
-
-    @Override
-    public void visitWebappStart(String path, File dir)
-    {
-        super.visitWebappStart(path,dir);
-
-        File webXmlFile = new File(dir,"WEB-INF/web.xml".replaceAll("/",fileSep));
-        String webxmlpath = getWebappRelativePath(webXmlFile);
-
-        if (!webXmlFile.exists())
-        {
-            error(webxmlpath,"web.xml does not exist");
-            return;
-        }
-
-        // Using JAXP to parse the web.xml (SAX pls)
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(true);
-
-        try
-        {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(webXmlFile);
-
-            List<ServletId> detectedIds = collectServletIds(webxmlpath,doc);
-            Set<String> versions = new TreeSet<String>();
-            for (ServletId id : detectedIds)
-            {
-                versions.add(id.version);
-            }
-
-            if (versions.size() > 1)
-            {
-                String msg = String.format("Found %d versions defined [%s], expected 1",versions.size(),join(versions,", "));
-                error(webxmlpath,msg);
-                for (ServletId id : detectedIds)
-                {
-                    reportConflicting(webxmlpath,id,detectedIds);
-                }
-            }
-
-            reportOverVersion(webxmlpath,detectedIds);
-        }
-        catch (ParserConfigurationException e)
-        {
-            exception(webxmlpath,"[internal] Unable to establish XML parser",e);
-        }
-        catch (SAXException e)
-        {
-            exception(webxmlpath,"Unable to parse web.xml",e);
-        }
-        catch (IOException e)
-        {
-            exception(webxmlpath,"Unable to parse web.xml",e);
-        }
-    }
-
-    private void reportOverVersion(String webxmlpath, List<ServletId> detectedIds)
-    {
-        double supportedVer = Double.parseDouble(this.supportedVersion);
-
-        for (ServletId id : detectedIds)
-        {
-            try
-            {
-                double detectedVersion = Double.parseDouble(id.version);
-                if (detectedVersion > supportedVer)
-                {
-                    String msg = String.format("Specified servlet version %s of %s is over the configured supported servlet version %s",id.version,id.type,
-                            supportedVersion);
-                    error(webxmlpath,msg);
-                }
-            }
-            catch (NumberFormatException e)
-            {
-                error(webxmlpath,String.format("Unable to parse version [%s] of %s, not a double",id.version,id.type));
-            }
-        }
-
-    }
-
-    private void reportConflicting(String webxmlpath, ServletId mainId, List<ServletId> otherIds)
-    {
-        for (ServletId id : otherIds)
-        {
-            if (id.version.equals(mainId.version) == false)
-            {
-                String msg = String.format("version %s of %s conflicts with version %s of %s",mainId.version,mainId.type,id.version,id.type);
-                error(webxmlpath,msg);
-            }
-        }
-    }
-
-    private String join(Collection<?> coll, String delim)
-    {
-        StringBuffer msg = new StringBuffer();
-
-        Iterator<?> it = coll.iterator();
-        while (it.hasNext())
-        {
-            msg.append(String.valueOf(it.next()));
-            if (it.hasNext())
-            {
-                msg.append(delim);
-            }
-        }
-
-        return msg.toString();
     }
 
     private List<ServletId> collectServletIds(String webxmlpath, Document doc)
@@ -360,6 +230,23 @@ public class ServletSupportLevelRule extends AbstractRule
         return ids;
     }
 
+    @Override
+    public String getDescription()
+    {
+        return "Ensure webapp works within supported servlet spec";
+    }
+
+    @Override
+    public String getName()
+    {
+        return "servlet-support-level";
+    }
+
+    public String getSupportedVersion()
+    {
+        return supportedVersion;
+    }
+
     private boolean hasAnyValue(String... values)
     {
         for (String value : values)
@@ -370,5 +257,120 @@ public class ServletSupportLevelRule extends AbstractRule
             }
         }
         return false;
+    }
+
+    private String join(Collection<?> coll, String delim)
+    {
+        StringBuffer msg = new StringBuffer();
+
+        Iterator<?> it = coll.iterator();
+        while (it.hasNext())
+        {
+            msg.append(String.valueOf(it.next()));
+            if (it.hasNext())
+            {
+                msg.append(delim);
+            }
+        }
+
+        return msg.toString();
+    }
+
+    private void reportConflicting(String webxmlpath, ServletId mainId, List<ServletId> otherIds)
+    {
+        for (ServletId id : otherIds)
+        {
+            if (id.version.equals(mainId.version) == false)
+            {
+                String msg = String.format("version %s of %s conflicts with version %s of %s",mainId.version,mainId.type,id.version,id.type);
+                error(webxmlpath,msg);
+            }
+        }
+    }
+
+    private void reportOverVersion(String webxmlpath, List<ServletId> detectedIds)
+    {
+        double supportedVer = Double.parseDouble(this.supportedVersion);
+
+        for (ServletId id : detectedIds)
+        {
+            try
+            {
+                double detectedVersion = Double.parseDouble(id.version);
+                if (detectedVersion > supportedVer)
+                {
+                    String msg = String.format("Specified servlet version %s of %s is over the configured supported servlet version %s",id.version,id.type,
+                            supportedVersion);
+                    error(webxmlpath,msg);
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                error(webxmlpath,String.format("Unable to parse version [%s] of %s, not a double",id.version,id.type));
+            }
+        }
+
+    }
+
+    public void setSupportedVersion(String supportedLevel)
+    {
+        this.supportedVersion = supportedLevel;
+    }
+
+    @Override
+    public void visitWebappStart(String path, File dir)
+    {
+        super.visitWebappStart(path,dir);
+
+        File webXmlFile = new File(dir,"WEB-INF/web.xml".replaceAll("/",fileSep));
+        String webxmlpath = getWebappRelativePath(webXmlFile);
+
+        if (!webXmlFile.exists())
+        {
+            error(webxmlpath,"web.xml does not exist");
+            return;
+        }
+
+        // Using JAXP to parse the web.xml (SAX pls)
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(true);
+
+        try
+        {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(webXmlFile);
+
+            List<ServletId> detectedIds = collectServletIds(webxmlpath,doc);
+            Set<String> versions = new TreeSet<String>();
+            for (ServletId id : detectedIds)
+            {
+                versions.add(id.version);
+            }
+
+            if (versions.size() > 1)
+            {
+                String msg = String.format("Found %d versions defined [%s], expected 1",versions.size(),join(versions,", "));
+                error(webxmlpath,msg);
+                for (ServletId id : detectedIds)
+                {
+                    reportConflicting(webxmlpath,id,detectedIds);
+                }
+            }
+
+            reportOverVersion(webxmlpath,detectedIds);
+        }
+        catch (ParserConfigurationException e)
+        {
+            exception(webxmlpath,"[internal] Unable to establish XML parser",e);
+        }
+        catch (SAXException e)
+        {
+            exception(webxmlpath,"Unable to parse web.xml",e);
+        }
+        catch (IOException e)
+        {
+            exception(webxmlpath,"Unable to parse web.xml",e);
+        }
     }
 }

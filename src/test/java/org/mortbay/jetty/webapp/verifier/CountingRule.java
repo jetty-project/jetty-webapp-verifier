@@ -19,29 +19,29 @@ import java.io.File;
 import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 
-import org.mortbay.jetty.webapp.verifier.AbstractRule;
-
 public class CountingRule extends AbstractRule
 {
-    public int countWebappStart = 0;
+    public int countDirEnd = 0;
     public int countDirStart = 0;
     public int countFile = 0;
-    public int countDirEnd = 0;
-    public int countWebInfClassesStart = 0;
-    public int countWebInfClass = 0;
-    public int countWebInfClassResource = 0;
-    public int countWebInfClassesEnd = 0;
-    public int countWebInfLibStart = 0;
-    public int countWebInfLibJar = 0;
-    public int countWebInfLibZip = 0;
-    public int countWebInfLibEnd = 0;
     public int countWebappEnd = 0;
+    public int countWebappStart = 0;
+    public int countWebInfClass = 0;
+    public int countWebInfClassesEnd = 0;
+    public int countWebInfClassesStart = 0;
+    public int countWebInfClassResource = 0;
+    public int countWebInfLibEnd = 0;
+    public int countWebInfLibJar = 0;
+    public int countWebInfLibStart = 0;
+    public int countWebInfLibZip = 0;
 
+    @Override
     public String getDescription()
     {
         return "TestCase only rule, that counts hits to visitors";
     }
 
+    @Override
     public String getName()
     {
         return "test-counting";

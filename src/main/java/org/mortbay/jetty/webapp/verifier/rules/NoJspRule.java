@@ -24,11 +24,13 @@ import org.mortbay.jetty.webapp.verifier.AbstractRule;
  */
 public class NoJspRule extends AbstractRule
 {
+    @Override
     public String getDescription()
     {
         return "Prevent inclusion of JSPs in webapp";
     }
 
+    @Override
     public String getName()
     {
         return "no-jsp";

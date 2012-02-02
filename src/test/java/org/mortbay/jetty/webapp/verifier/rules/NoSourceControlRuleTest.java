@@ -25,7 +25,7 @@ import org.mortbay.jetty.webapp.verifier.RuleAssert;
  */
 public class NoSourceControlRuleTest extends TestCase
 {
-	@Test
+    @Test
     public void testNoScm() throws Exception
     {
         RuleAssert.assertIntegration("no_scm");

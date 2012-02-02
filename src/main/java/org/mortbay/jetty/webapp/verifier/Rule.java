@@ -54,14 +54,14 @@ public interface Rule
     public static final String ROOT_PATH = "";
 
     /**
-     * A short name for the rule.
-     */
-    public String getName();
-
-    /**
      * A Description of the purpose of the rule. What does it check for? Why?
      */
     public String getDescription();
+
+    /**
+     * A short name for the rule.
+     */
+    public String getName();
 
     /**
      * Initialization logic for the rule, exceptions from initialization will be logged as a {@link Severity#ERROR}
@@ -78,14 +78,14 @@ public interface Rule
     public void setViolationListener(ViolationListener listener);
 
     /**
-     * The iteration of the webapp has begun.
+     * A visit of a directory has ended.
      * 
      * @param path
      *            the war relative path to this directory.
      * @param dir
-     *            the real File System directory to the webapp work directory
+     *            the real File System directory.
      */
-    public void visitWebappStart(String path, File dir);
+    public void visitDirectoryEnd(String path, File dir);
 
     /**
      * A visit of a directory has begun.
@@ -111,24 +111,24 @@ public interface Rule
     public void visitFile(String path, File dir, File file);
 
     /**
-     * A visit of a directory has ended.
+     * The iteration of the webapp has ended.
      * 
      * @param path
      *            the war relative path to this directory.
      * @param dir
-     *            the real File System directory.
+     *            the real File System directory to the webapp work directory
      */
-    public void visitDirectoryEnd(String path, File dir);
+    public void visitWebappEnd(String path, File dir);
 
     /**
-     * The visit to WEB-INF/classes is starting
+     * The iteration of the webapp has begun.
      * 
      * @param path
-     *            the war relative path to the WEB-INF/classes dir. (Note: Will always be "WEB-INF/classes")
+     *            the war relative path to this directory.
      * @param dir
-     *            the real File System directory.
+     *            the real File System directory to the webapp work directory
      */
-    public void visitWebInfClassesStart(String path, File dir);
+    public void visitWebappStart(String path, File dir);
 
     /**
      * A visit of a Class found in WEB-INF/classes.
@@ -141,6 +141,26 @@ public interface Rule
      *            the real File System directory object for this directory.
      */
     public void visitWebInfClass(String path, String className, File classFile);
+
+    /**
+     * The visit to WEB-INF/classes has ended
+     * 
+     * @param path
+     *            the war relative path to the WEB-INF/classes dir. (Note: Will always be "WEB-INF/classes")
+     * @param dir
+     *            the real File System directory.
+     */
+    public void visitWebInfClassesEnd(String path, File dir);
+
+    /**
+     * The visit to WEB-INF/classes is starting
+     * 
+     * @param path
+     *            the war relative path to the WEB-INF/classes dir. (Note: Will always be "WEB-INF/classes")
+     * @param dir
+     *            the real File System directory.
+     */
+    public void visitWebInfClassesStart(String path, File dir);
 
     /**
      * A visit of a Resource available in "WEB-INF/classes" which is not a Class (such as an XML file or a properties
@@ -157,24 +177,14 @@ public interface Rule
     public void visitWebInfClassResource(String path, String resourcePath, File resourceFile);
 
     /**
-     * The visit to WEB-INF/classes has ended
-     * 
-     * @param path
-     *            the war relative path to the WEB-INF/classes dir. (Note: Will always be "WEB-INF/classes")
-     * @param dir
-     *            the real File System directory.
-     */
-    public void visitWebInfClassesEnd(String path, File dir);
-
-    /**
-     * The visit to WEB-INF/lib is starting.
+     * The visit to WEB-INF/lib has ended.
      * 
      * @param path
      *            the war relative path to the WEB-INF/lib dir. (Note: Will always be "WEB-INF/lib")
      * @param dir
      *            the real File System directory.
      */
-    public void visitWebInfLibStart(String path, File dir);
+    public void visitWebInfLibEnd(String path, File dir);
 
     /**
      * A visit to a JAR archive in the WEB-INF/lib directory.
@@ -189,6 +199,16 @@ public interface Rule
     public void visitWebInfLibJar(String path, File archive, JarFile jar);
 
     /**
+     * The visit to WEB-INF/lib is starting.
+     * 
+     * @param path
+     *            the war relative path to the WEB-INF/lib dir. (Note: Will always be "WEB-INF/lib")
+     * @param dir
+     *            the real File System directory.
+     */
+    public void visitWebInfLibStart(String path, File dir);
+
+    /**
      * A visit to an archive in the WEB-INF/lib directory has begun.
      * 
      * @param path
@@ -199,24 +219,4 @@ public interface Rule
      *            the {@link ZipFile}
      */
     public void visitWebInfLibZip(String path, File archive, ZipFile zip);
-
-    /**
-     * The visit to WEB-INF/lib has ended.
-     * 
-     * @param path
-     *            the war relative path to the WEB-INF/lib dir. (Note: Will always be "WEB-INF/lib")
-     * @param dir
-     *            the real File System directory.
-     */
-    public void visitWebInfLibEnd(String path, File dir);
-
-    /**
-     * The iteration of the webapp has ended.
-     * 
-     * @param path
-     *            the war relative path to this directory.
-     * @param dir
-     *            the real File System directory to the webapp work directory
-     */
-    public void visitWebappEnd(String path, File dir);
 }

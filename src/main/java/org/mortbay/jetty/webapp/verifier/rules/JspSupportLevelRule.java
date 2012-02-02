@@ -24,11 +24,13 @@ import org.mortbay.jetty.webapp.verifier.AbstractRule;
  */
 public class JspSupportLevelRule extends AbstractRule
 {
+    @Override
     public String getDescription()
     {
         return "Ensure include JSP are supported by the Container";
     }
 
+    @Override
     public String getName()
     {
         return "jsp-support-level";

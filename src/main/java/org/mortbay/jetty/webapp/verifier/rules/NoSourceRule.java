@@ -45,11 +45,11 @@ public class NoSourceRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitFile(String path, File dir, File file)
+    public void visitArchiveResource(String path, ZipFile zip, ZipEntry entry)
     {
         for (String pattern : sourcePatterns)
         {
-            if (PathGlob.match(pattern,path))
+            if (PathGlob.match(pattern,entry.getName()))
             {
                 error(path,"Source code is forbidden");
             }
@@ -57,11 +57,11 @@ public class NoSourceRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitArchiveResource(String path, ZipFile zip, ZipEntry entry)
+    public void visitFile(String path, File dir, File file)
     {
         for (String pattern : sourcePatterns)
         {
-            if (PathGlob.match(pattern,entry.getName()))
+            if (PathGlob.match(pattern,path))
             {
                 error(path,"Source code is forbidden");
             }

@@ -42,29 +42,26 @@ public class WebappVerifierBinding implements AppLifeCycle.Binding
 
     private String rulesetPath;
 
-    public String getRulesetPath()
-    {
-        return rulesetPath;
-    }
-
-    public void setRulesetPath(String rulesetPath)
-    {
-        this.rulesetPath = rulesetPath;
-    }
-
+    @Override
     public String[] getBindingTargets()
     {
         return new String[]
         { "deploying" };
     }
 
+    public String getRulesetPath()
+    {
+        return rulesetPath;
+    }
+
+    @Override
     public void processBinding(Node node, App app) throws Exception
     {
         ContextHandler context = app.getContextHandler();
-        
-        if(!(context instanceof WebAppContext)) {
-            LOG.info("Webapp Verifier - " + app.getContextHandler().getClass().getName() + " is not an instance of " +
-                    WebAppContext.class.getName());
+
+        if (!(context instanceof WebAppContext))
+        {
+            LOG.info("Webapp Verifier - " + app.getContextHandler().getClass().getName() + " is not an instance of " + WebAppContext.class.getName());
             return;
         }
 
@@ -104,5 +101,10 @@ public class WebappVerifierBinding implements AppLifeCycle.Binding
         {
             throw new IllegalStateException("Webapp Failed Webapp Verification");
         }
+    }
+
+    public void setRulesetPath(String rulesetPath)
+    {
+        this.rulesetPath = rulesetPath;
     }
 }

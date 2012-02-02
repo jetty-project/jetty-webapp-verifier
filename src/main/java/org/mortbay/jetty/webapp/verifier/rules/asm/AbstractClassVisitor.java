@@ -27,49 +27,58 @@ import org.objectweb.asm.MethodVisitor;
 public abstract class AbstractClassVisitor implements ClassVisitor
 {
 
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces)
     {
         /* Override Ready */
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(String desc, boolean visible)
     {
         /* Override Ready */
         return null;
     }
 
+    @Override
     public void visitAttribute(Attribute attr)
     {
         /* Override Ready */
     }
 
+    @Override
     public void visitEnd()
     {
         /* Override Ready */
     }
 
+    @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value)
     {
         /* Override Ready */
         return null;
     }
 
+    @Override
     public void visitInnerClass(String name, String outerName, String innerName, int access)
     {
         /* Override Ready */
     }
 
+    @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions)
     {
         /* Override Ready */
         return null;
     }
 
+    @Override
     public void visitOuterClass(String owner, String name, String desc)
     {
         /* Override Ready */
     }
 
+    @Override
     public void visitSource(String source, String debug)
     {
         /* Override Ready */

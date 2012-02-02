@@ -77,13 +77,16 @@ public class RuleAssert
         String webappName = org.eclipse.jetty.toolchain.test.IO.readToString(setupFile).trim();
 
         File webappPath;
-        
-        if(webappName.startsWith("test-war-")) {
-        	webappPath = MavenTestingUtils.getTargetFile("test-wars/" + webappName);
-        } else {
-        	webappPath = MavenTestingUtils.getTestResourceFile(webappName);
+
+        if (webappName.startsWith("test-war-"))
+        {
+            webappPath = MavenTestingUtils.getTargetFile("test-wars/" + webappName);
         }
-        
+        else
+        {
+            webappPath = MavenTestingUtils.getTestResourceFile(webappName);
+        }
+
         URI webappURI = webappPath.toURI();
 
         // Load RuleSet configuration
@@ -188,7 +191,9 @@ public class RuleAssert
             return new Violation(severity,path,detail);
         }
         else
+        {
             return null;
+        }
     }
-    
+
 }

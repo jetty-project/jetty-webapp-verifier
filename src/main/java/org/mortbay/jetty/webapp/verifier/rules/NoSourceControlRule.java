@@ -31,8 +31,8 @@ public class NoSourceControlRule extends AbstractArchiveScanningRule
 {
     class ScmName
     {
-        String scm;
         String name;
+        String scm;
 
         public ScmName(String scm, String name)
         {
@@ -82,28 +82,20 @@ public class NoSourceControlRule extends AbstractArchiveScanningRule
         return "no-source-control";
     }
 
-    @Override
-    public void visitDirectoryStart(String path, File dir)
+    private String toBaseName(ZipEntry entry)
     {
-        for (ScmName scmName : scmDirNames)
+        String name = entry.getName();
+        if (name.endsWith("/"))
         {
-            if (dir.getName().equalsIgnoreCase(scmName.name))
-            {
-                error(path,scmName.scm + " Source Control directories are not allowed");
-            }
+            name = name.substring(0,name.length() - 1);
         }
-    }
 
-    @Override
-    public void visitFile(String path, File dir, File file)
-    {
-        for (ScmName scmName : scmFileNames)
+        int idx = name.lastIndexOf('/');
+        if (idx >= 0)
         {
-            if (file.getName().equalsIgnoreCase(scmName.name))
-            {
-                error(path,scmName.scm + " Source Control file are not allowed");
-            }
+            return name.substring(idx + 1);
         }
+        return name;
     }
 
     @Override
@@ -133,19 +125,27 @@ public class NoSourceControlRule extends AbstractArchiveScanningRule
         }
     }
 
-    private String toBaseName(ZipEntry entry)
+    @Override
+    public void visitDirectoryStart(String path, File dir)
     {
-        String name =entry.getName();
-        if (name.endsWith("/"))
+        for (ScmName scmName : scmDirNames)
         {
-            name = name.substring(0,name.length() - 1);
+            if (dir.getName().equalsIgnoreCase(scmName.name))
+            {
+                error(path,scmName.scm + " Source Control directories are not allowed");
+            }
         }
+    }
 
-        int idx = name.lastIndexOf('/');
-        if (idx >= 0)
+    @Override
+    public void visitFile(String path, File dir, File file)
+    {
+        for (ScmName scmName : scmFileNames)
         {
-            return name.substring(idx + 1);
+            if (file.getName().equalsIgnoreCase(scmName.name))
+            {
+                error(path,scmName.scm + " Source Control file are not allowed");
+            }
         }
-        return name;
     }
 }

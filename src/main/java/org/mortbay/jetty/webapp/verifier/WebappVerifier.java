@@ -42,6 +42,16 @@ import org.eclipse.jetty.util.resource.Resource;
  */
 public class WebappVerifier implements ViolationListener
 {
+    private List<Rule> _rules;
+
+    private Map<String, List<Violation>> _violations;
+    /**
+     * Represents the local webapp file directory, often times points to the working (unpacked) webapp directory.
+     * 
+     * NOTE: if _webappURI is a "file://" access URI, and points to a directory, then the _webappDir will point to the
+     * the same place, otherwise it will point to the webapp directory.
+     */
+    private File _webappDir;
     /**
      * <p>
      * Represents the source webappURI.
@@ -54,21 +64,11 @@ public class WebappVerifier implements ViolationListener
      * </p>
      */
     private URI _webappURI;
-
-    /**
-     * Represents the local webapp file directory, often times points to the working (unpacked) webapp directory.
-     *
-     * NOTE: if _webappURI is a "file://" access URI, and points to a directory, then the _webappDir will point to the
-     * the same place, otherwise it will point to the webapp directory.
-     */
-    private File _webappDir;
     private File _workdir;
-    private List<Rule> _rules;
-    private Map<String, List<Violation>> _violations;
 
     /**
      * Instantiate a WebappVerifier, against the specific webappURI, using the default workdir.
-     *
+     * 
      * @param webappURI
      *            the webappURI to verify
      */
@@ -119,7 +119,7 @@ public class WebappVerifier implements ViolationListener
         for (int i = 0; i < destname.length(); i++)
         {
             char c = destname.charAt(i);
-            if (c == '|' || c == '/' || c == '\\' || c == '*' || c == '?' || c == ':' || c == '#')
+            if ((c == '|') || (c == '/') || (c == '\\') || (c == '*') || (c == '?') || (c == ':') || (c == '#'))
             {
                 cleaned[i] = '_';
             }
@@ -141,10 +141,12 @@ public class WebappVerifier implements ViolationListener
 
     private File download(URI uri) throws MalformedURLException, IOException
     {
-    	if (!_workdir.exists())
-    		_workdir.mkdirs();
-    	
-    	// Establish destfile
+        if (!_workdir.exists())
+        {
+            _workdir.mkdirs();
+        }
+
+        // Establish destfile
         File destfile = new File(_workdir,cleanFilename(uri));
 
         InputStream in = null;
@@ -245,6 +247,7 @@ public class WebappVerifier implements ViolationListener
         reportViolation(new Violation(error,path,detail));
     }
 
+    @Override
     public void reportViolation(Violation violation)
     {
         List<Violation> pathviol = _violations.get(violation.getPath());
@@ -320,35 +323,18 @@ public class WebappVerifier implements ViolationListener
         }
     }
 
-    private void visitWebInfClasses()
+    private void visitClass(File classesRoot, File file)
     {
-        File classesDir = new File(_webappDir,"WEB-INF" + File.separator + "classes");
-        if (!classesDir.exists())
+        String path = getWebappRelativePath(file);
+        String className = classesRoot.toURI().relativize(file.toURI()).toASCIIString();
+        className = className.replace("/",".");
+        if (className.endsWith(".class"))
         {
-            // skip this path.
-            return;
+            className = className.substring(0,className.length() - 6);
         }
-
-        String classesPath = getWebappRelativePath(classesDir);
-
-        if (!classesDir.isDirectory())
-        {
-            reportViolation(Severity.ERROR,classesPath,"WEB-INF/classes is not a Directory?");
-            return;
-        }
-
-        // Issue start.
         for (Rule rule : _rules)
         {
-            rule.visitWebInfClassesStart(classesPath,classesDir);
-        }
-
-        visitClassesDir(classesDir,classesDir);
-
-        // Issue end.
-        for (Rule rule : _rules)
-        {
-            rule.visitWebInfClassesEnd(classesPath,classesDir);
+            rule.visitWebInfClass(path,className,file);
         }
     }
 
@@ -386,18 +372,81 @@ public class WebappVerifier implements ViolationListener
         }
     }
 
-    private void visitClass(File classesRoot, File file)
+    private void visitContents()
     {
-        String path = getWebappRelativePath(file);
-        String className = classesRoot.toURI().relativize(file.toURI()).toASCIIString();
-        className = className.replace("/",".");
-        if (className.endsWith(".class"))
+        visitDirectoryRecursively(_webappDir);
+    }
+
+    private void visitDirectoryRecursively(File dir)
+    {
+        String path = getWebappRelativePath(dir);
+
+        // Start Dir
+        for (Rule rule : this._rules)
         {
-            className = className.substring(0,className.length() - 6);
+            rule.visitDirectoryStart(path,dir);
         }
+
+        File entries[] = dir.listFiles();
+
+        // Individual Files
+        for (File file : entries)
+        {
+            if (file.isFile())
+            {
+                String filepath = path + file.getName();
+                for (Rule rule : this._rules)
+                {
+                    rule.visitFile(filepath,dir,file);
+                }
+            }
+        }
+
+        // Sub dirs
+        for (File file : entries)
+        {
+            if (file.isDirectory())
+            {
+                visitDirectoryRecursively(file);
+            }
+        }
+
+        // End Dir
+        for (Rule rule : this._rules)
+        {
+            rule.visitDirectoryEnd(path,dir);
+        }
+    }
+
+    private void visitWebInfClasses()
+    {
+        File classesDir = new File(_webappDir,"WEB-INF" + File.separator + "classes");
+        if (!classesDir.exists())
+        {
+            // skip this path.
+            return;
+        }
+
+        String classesPath = getWebappRelativePath(classesDir);
+
+        if (!classesDir.isDirectory())
+        {
+            reportViolation(Severity.ERROR,classesPath,"WEB-INF/classes is not a Directory?");
+            return;
+        }
+
+        // Issue start.
         for (Rule rule : _rules)
         {
-            rule.visitWebInfClass(path,className,file);
+            rule.visitWebInfClassesStart(classesPath,classesDir);
+        }
+
+        visitClassesDir(classesDir,classesDir);
+
+        // Issue end.
+        for (Rule rule : _rules)
+        {
+            rule.visitWebInfClassesEnd(classesPath,classesDir);
         }
     }
 
@@ -523,52 +572,6 @@ public class WebappVerifier implements ViolationListener
                     }
                 }
             }
-        }
-    }
-
-    private void visitContents()
-    {
-        visitDirectoryRecursively(_webappDir);
-    }
-
-    private void visitDirectoryRecursively(File dir)
-    {
-        String path = getWebappRelativePath(dir);
-
-        // Start Dir
-        for (Rule rule : this._rules)
-        {
-            rule.visitDirectoryStart(path,dir);
-        }
-
-        File entries[] = dir.listFiles();
-
-        // Individual Files
-        for (File file : entries)
-        {
-            if (file.isFile())
-            {
-                String filepath = path + file.getName();
-                for (Rule rule : this._rules)
-                {
-                    rule.visitFile(filepath,dir,file);
-                }
-            }
-        }
-
-        // Sub dirs
-        for (File file : entries)
-        {
-            if (file.isDirectory())
-            {
-                visitDirectoryRecursively(file);
-            }
-        }
-
-        // End Dir
-        for (Rule rule : this._rules)
-        {
-            rule.visitDirectoryEnd(path,dir);
         }
     }
 

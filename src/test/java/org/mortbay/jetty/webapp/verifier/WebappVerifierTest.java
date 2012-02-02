@@ -24,10 +24,10 @@ import org.junit.Test;
 
 public class WebappVerifierTest extends AbstractTestWebappVerifier
 {
-	@org.junit.Rule
-	public TestingDir testingdir = new TestingDir();
+    @org.junit.Rule
+    public TestingDir testingdir = new TestingDir();
 
-	@Test
+    @Test
     public void testVerifierVisitation() throws Exception
     {
         CountingRule counts = new CountingRule();

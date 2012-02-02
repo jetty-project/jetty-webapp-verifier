@@ -21,8 +21,8 @@ import java.util.zip.ZipFile;
 
 public abstract class AbstractRule implements Rule
 {
-    private ViolationListener violationListener;
     private File rootDir;
+    private ViolationListener violationListener;
 
     protected void error(String path, String detail)
     {
@@ -51,18 +51,9 @@ public abstract class AbstractRule implements Rule
     /**
      * {@inheritDoc}
      * 
-     * @see org.mortbay.jetty.webapp.verifier.Rule#setViolationListener(ViolationListener)
-     */
-    public void setViolationListener(ViolationListener listener)
-    {
-        this.violationListener = listener;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#initialize()
      */
+    @Override
     public void initialize() throws Throwable
     {
         /* override to implement */
@@ -71,8 +62,20 @@ public abstract class AbstractRule implements Rule
     /**
      * {@inheritDoc}
      * 
+     * @see org.mortbay.jetty.webapp.verifier.Rule#setViolationListener(ViolationListener)
+     */
+    @Override
+    public void setViolationListener(ViolationListener listener)
+    {
+        this.violationListener = listener;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitDirectoryEnd(java.lang.String, java.io.File)
      */
+    @Override
     public void visitDirectoryEnd(String path, File dir)
     {
         /* override to implement */
@@ -83,6 +86,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitDirectoryStart(java.lang.String, java.io.File)
      */
+    @Override
     public void visitDirectoryStart(String path, File dir)
     {
         /* override to implement */
@@ -93,6 +97,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitFile(java.lang.String, java.io.File, java.io.File)
      */
+    @Override
     public void visitFile(String path, File dir, File file)
     {
         /* override to implement */
@@ -103,6 +108,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebappEnd(java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebappEnd(String path, File dir)
     {
         /* override to implement */
@@ -115,6 +121,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebappStart(java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebappStart(String path, File dir)
     {
         if (path.equals(ROOT_PATH))
@@ -126,9 +133,9 @@ public abstract class AbstractRule implements Rule
     /**
      * {@inheritDoc}
      * 
-     * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfClass(java.lang.String, java.lang.String,
-     *      java.io.File)
+     * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfClass(java.lang.String, java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebInfClass(String path, String className, File classFile)
     {
         /* override to implement */
@@ -139,6 +146,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfClassesEnd(java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebInfClassesEnd(String path, File dir)
     {
         // TODO Auto-generated method stub
@@ -150,6 +158,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfClassesStart(java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebInfClassesStart(String path, File dir)
     {
         /* override to implement */
@@ -161,6 +170,7 @@ public abstract class AbstractRule implements Rule
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfClassResource(java.lang.String, java.lang.String,
      *      java.io.File)
      */
+    @Override
     public void visitWebInfClassResource(String path, String resourcePath, File resourceFile)
     {
         /* override to implement */
@@ -171,6 +181,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfLibEnd(java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebInfLibEnd(String path, File dir)
     {
         /* override to implement */
@@ -181,6 +192,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfLibJar(String, File, JarFile)
      */
+    @Override
     public void visitWebInfLibJar(String path, File archive, JarFile jar)
     {
         /* override to implement */
@@ -191,6 +203,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfLibStart(java.lang.String, java.io.File)
      */
+    @Override
     public void visitWebInfLibStart(String path, File dir)
     {
         /* override to implement */
@@ -201,6 +214,7 @@ public abstract class AbstractRule implements Rule
      * 
      * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfLibZip(String, File, ZipFile)
      */
+    @Override
     public void visitWebInfLibZip(String path, File archive, ZipFile zip)
     {
         /* override to implement */

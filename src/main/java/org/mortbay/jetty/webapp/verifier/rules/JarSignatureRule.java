@@ -33,19 +33,44 @@ import org.mortbay.jetty.webapp.verifier.AbstractRule;
  */
 public class JarSignatureRule extends AbstractRule
 {
-    private String _keystoreLocation = System.getProperty("java.home") + "/lib/security/cacerts";
-    private String _type = "JKS"; // default
+    private static X509Certificate[] _trustedCertificates;
     private String _alias = "verisignclass3ca"; // default
     private KeyStore _keystore;
+    private String _keystoreLocation = System.getProperty("java.home") + "/lib/security/cacerts";
 
-    private static X509Certificate[] _trustedCertificates;
+    private String _type = "JKS"; // default
+
+    /**
+     * Returns a array of certificates with the root certificate of each chain
+     * 
+     * @param certificates
+     *            an array of X509 certificate's
+     * @return an array of X509 certificate's with the root certificate of each chain
+     */
+    private X509Certificate[] getChainRoots(Certificate[] certificates)
+    {
+        List<X509Certificate> chainRoots = new ArrayList<X509Certificate>();
+
+        for (int i = 0; i < (certificates.length - 1); i++)
+        {
+            if (!((X509Certificate)certificates[i + 1]).getSubjectDN().equals(((X509Certificate)certificates[i]).getIssuerDN()))
+            {
+                chainRoots.add((X509Certificate)certificates[i]);
+            }
+        }
+
+        chainRoots.add((X509Certificate)certificates[certificates.length - 1]);
+
+        return chainRoots.toArray(new X509Certificate[chainRoots.size()]);
+    }
 
     /* ------------------------------------------------------------ */
     /**
      * @see org.mortbay.jetty.webapp.verifier.AbstractRule#getDescription()
      */
+    @Override
     public String getDescription()
-    {   
+    {
         return "verifies that the given keystore contains the certificates required for all jar files present";
     }
 
@@ -53,9 +78,76 @@ public class JarSignatureRule extends AbstractRule
     /**
      * @see org.mortbay.jetty.webapp.verifier.AbstractRule#getName()
      */
+    @Override
     public String getName()
     {
         return "jar-signature";
+    }
+
+    @Override
+    public void initialize()
+    {
+        InputStream in = null;
+
+        try
+        {
+            _keystore = KeyStore.getInstance(_type);
+
+            File keystoreFile = new File(_keystoreLocation);
+            in = new FileInputStream(keystoreFile);
+
+            _keystore.load(in,null);
+
+            X509Certificate x509 = (X509Certificate)_keystore.getCertificate(_alias);
+
+            if (x509 == null)
+            {
+                super.error(_keystoreLocation,"Unable to obtain X509Certificate from keystore");
+                return;
+            }
+
+            _trustedCertificates = new X509Certificate[]
+            { x509 };
+
+        }
+        catch (Throwable t)
+        {
+            exception(_keystoreLocation,t.getMessage(),t);
+        }
+        finally
+        {
+            IO.close(in);
+        }
+    }
+
+    private boolean isTrusted(X509Certificate certificate)
+    {
+        for (X509Certificate _trustedCertificate : _trustedCertificates)
+        {
+            if (certificate.getSubjectDN().equals(_trustedCertificate.getSubjectDN()))
+            {
+                if (certificate.equals(_trustedCertificate))
+                {
+                    return true;
+                }
+            }
+        }
+
+        for (X509Certificate _trustedCertificate : _trustedCertificates)
+        {
+            if (certificate.getIssuerDN().equals(_trustedCertificate.getSubjectDN()))
+            {
+                try
+                {
+                    certificate.verify(_trustedCertificate.getPublicKey());
+                    return true;
+                }
+                catch (Exception e)
+                {
+                }
+            }
+        }
+        return false;
     }
 
     /* ------------------------------------------------------------ */
@@ -93,43 +185,9 @@ public class JarSignatureRule extends AbstractRule
      * @param keyStoreLocation
      *            the _keystore to set
      */
-    public void setKeystoreLocation( String keyStoreLocation )
+    public void setKeystoreLocation(String keyStoreLocation)
     {
         _keystoreLocation = keyStoreLocation;
-    }
-
-    @Override
-    public void initialize()
-    {
-    	InputStream in = null;
-    	
-        try
-        {
-            _keystore = KeyStore.getInstance(_type);
-            
-            File keystoreFile = new File(_keystoreLocation);
-            in = new FileInputStream(keystoreFile);
-
-            _keystore.load(in,null);
-            
-            X509Certificate x509 = (X509Certificate)_keystore.getCertificate(_alias);
-            
-            if(x509 == null) {
-                super.error(_keystoreLocation,"Unable to obtain X509Certificate from keystore");
-                return;
-            }
-
-            _trustedCertificates = new X509Certificate[] { x509 };
-
-        }
-        catch (Throwable t)
-        {
-            exception(_keystoreLocation, t.getMessage(), t);
-        }
-        finally 
-        {
-            IO.close(in);
-        }
     }
 
     public void setType(String type)
@@ -138,7 +196,8 @@ public class JarSignatureRule extends AbstractRule
     }
 
     /**
-     * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfLibJar(java.lang.String, java.io.File, java.util.jar.JarFile)
+     * @see org.mortbay.jetty.webapp.verifier.Rule#visitWebInfLibJar(java.lang.String, java.io.File,
+     *      java.util.jar.JarFile)
      */
     @Override
     public void visitWebInfLibJar(String path, File archive, JarFile jar)
@@ -159,7 +218,7 @@ public class JarSignatureRule extends AbstractRule
                 {
                     Certificate[] certs = jarEntry.getCertificates();
 
-                    if (certs == null || certs.length == 0)
+                    if ((certs == null) || (certs.length == 0))
                     {
                         error(jarEntry.getName(),"entry has not been signed");
                     }
@@ -168,9 +227,9 @@ public class JarSignatureRule extends AbstractRule
                         X509Certificate[] chainRoots = getChainRoots(certs);
                         boolean signed = false;
 
-                        for (int i = 0; i < chainRoots.length; i++)
+                        for (X509Certificate chainRoot : chainRoots)
                         {
-                            if (isTrusted(chainRoots[i]))
+                            if (isTrusted(chainRoot))
                             {
                                 signed = true;
                                 break;
@@ -186,61 +245,8 @@ public class JarSignatureRule extends AbstractRule
         }
         catch (Exception e)
         {
-            exception(jar.getName(), e.getMessage(), e);
+            exception(jar.getName(),e.getMessage(),e);
         }
-    }
-
-    private boolean isTrusted(X509Certificate certificate)
-    {
-        for (int i = 0; i < _trustedCertificates.length; i++)
-        {
-            if (certificate.getSubjectDN().equals(_trustedCertificates[i].getSubjectDN()))
-            {
-                if (certificate.equals(_trustedCertificates[i]))
-                {
-                    return true;
-                }
-            }
-        }
-
-        for (int i = 0; i < _trustedCertificates.length; i++)
-        {
-            if (certificate.getIssuerDN().equals(_trustedCertificates[i].getSubjectDN()))
-            {
-                try
-                {
-                    certificate.verify(_trustedCertificates[i].getPublicKey());
-                    return true;
-                }
-                catch (Exception e)
-                {
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns a array of certificates with the root certificate of each chain
-     * 
-     * @param certificates an array of X509 certificate's
-     * @return an array of X509 certificate's with the root certificate of each chain
-     */
-    private X509Certificate[] getChainRoots(Certificate[] certificates)
-    {
-        List<X509Certificate> chainRoots = new ArrayList<X509Certificate>();
-        
-        for (int i = 0; i < certificates.length - 1; i++)
-        {
-            if (!((X509Certificate)certificates[i + 1]).getSubjectDN().equals(((X509Certificate)certificates[i]).getIssuerDN()))
-            {
-                chainRoots.add((X509Certificate)certificates[i]);
-            }
-        }
-
-        chainRoots.add((X509Certificate)certificates[certificates.length - 1]);
-        
-        return chainRoots.toArray(new X509Certificate[chainRoots.size()]);
     }
 
 }

@@ -7,7 +7,7 @@ import org.mortbay.jetty.webapp.verifier.RuleAssert;
 
 public class NoNativeRuleTest extends TestCase
 {
-	@Test
+    @Test
     public void testNoNative() throws Exception
     {
         RuleAssert.assertIntegration("no_native");

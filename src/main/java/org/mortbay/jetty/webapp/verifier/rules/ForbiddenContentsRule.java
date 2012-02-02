@@ -34,11 +34,13 @@ public class ForbiddenContentsRule extends AbstractRule
         _patterns.add(pattern);
     }
 
+    @Override
     public String getDescription()
     {
         return "Checks for forbidden content";
     }
 
+    @Override
     public String getName()
     {
         return "forbidden-content";

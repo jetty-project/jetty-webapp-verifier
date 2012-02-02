@@ -24,11 +24,13 @@ import org.mortbay.jetty.webapp.verifier.AbstractRule;
  */
 public class JspPrecompileRule extends AbstractRule
 {
+    @Override
     public String getDescription()
     {
         return "Perform JSP precompile to ensure all jsps are valid";
     }
 
+    @Override
     public String getName()
     {
         return "jsp-precompile";

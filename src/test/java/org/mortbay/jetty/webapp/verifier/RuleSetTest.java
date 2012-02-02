@@ -17,14 +17,12 @@ package org.mortbay.jetty.webapp.verifier;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mortbay.jetty.webapp.verifier.Rule;
-import org.mortbay.jetty.webapp.verifier.RuleSet;
 import org.mortbay.jetty.webapp.verifier.rules.ForbiddenContentsRule;
 import org.mortbay.jetty.webapp.verifier.rules.RequiredContentsRule;
 
 public class RuleSetTest extends AbstractTestWebappVerifier
 {
-	@Test
+    @Test
     public void testLoad() throws Exception
     {
         RuleSet suite = loadRuleSet("basic-ruleset.xml");

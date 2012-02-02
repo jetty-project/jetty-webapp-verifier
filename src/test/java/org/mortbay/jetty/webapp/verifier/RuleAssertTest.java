@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class RuleAssertTest
 {
-	@Test
+    @Test
     public void testParseLine()
     {
         Violation v;

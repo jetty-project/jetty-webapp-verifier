@@ -30,6 +30,7 @@ public class ViolationComparator implements Comparator<Violation>
 
     private Collator collator = Collator.getInstance();
 
+    @Override
     public int compare(Violation o1, Violation o2)
     {
         CollationKey pathKey1 = collator.getCollationKey(o1.getPath());

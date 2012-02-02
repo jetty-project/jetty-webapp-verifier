@@ -45,69 +45,32 @@ public class NoScriptingRule extends AbstractRule
         }
     }
 
-    private boolean allowJRuby = false;
     private boolean allowBeanshell = false;
     private boolean allowGroovy = false;
+    private boolean allowJRuby = false;
     private boolean allowJython = false;
     private boolean allowShell = false;
-    private List<Forbidden> forbiddenFileExtensions = new ArrayList<Forbidden>();
     private List<Forbidden> forbiddenClassIds = new ArrayList<Forbidden>();
+    private List<Forbidden> forbiddenFileExtensions = new ArrayList<Forbidden>();
 
-    public boolean isAllowShell()
+    private void checkArchiveClassname(String path, File archive, String name)
     {
-        return allowShell;
+        String className = name.replace("/",".");
+        if (className.endsWith(".class"))
+        {
+            className = className.substring(0,className.length() - 6);
+        }
+
+        validateClassname(path + "!/" + name,className);
     }
 
-    public void setAllowShell(boolean allowShell)
-    {
-        this.allowShell = allowShell;
-    }
-
-    public boolean isAllowJRuby()
-    {
-        return allowJRuby;
-    }
-
-    public void setAllowJRuby(boolean allowJruby)
-    {
-        this.allowJRuby = allowJruby;
-    }
-
-    public boolean isAllowBeanshell()
-    {
-        return allowBeanshell;
-    }
-
-    public void setAllowBeanshell(boolean allowBeanshell)
-    {
-        this.allowBeanshell = allowBeanshell;
-    }
-
-    public boolean isAllowGroovy()
-    {
-        return allowGroovy;
-    }
-
-    public void setAllowGroovy(boolean allowGroovy)
-    {
-        this.allowGroovy = allowGroovy;
-    }
-
-    public boolean isAllowJython()
-    {
-        return allowJython;
-    }
-
-    public void setAllowJython(boolean allowJython)
-    {
-        this.allowJython = allowJython;
-    }
-
+    @Override
     public String getDescription()
     {
         return "Do not allow scripting languages in webapp";
     }
 
+    @Override
     public String getName()
     {
         return "forbidden-scripting";
@@ -154,46 +117,29 @@ public class NoScriptingRule extends AbstractRule
         }
     }
 
-    @Override
-    public void visitFile(String path, File dir, File file)
+    public boolean isAllowBeanshell()
     {
-        String name = file.getName().toLowerCase();
-        for (Forbidden forbidden : forbiddenFileExtensions)
-        {
-            if (name.endsWith(forbidden.key))
-            {
-                error(path,forbidden.msg);
-            }
-        }
+        return allowBeanshell;
     }
 
-    @Override
-    public void visitWebInfClass(String path, String className, File classFile)
+    public boolean isAllowGroovy()
     {
-        validateClassname(path,className);
+        return allowGroovy;
     }
 
-    private void validateClassname(String path, String className)
+    public boolean isAllowJRuby()
     {
-        for (Forbidden forbidden : forbiddenClassIds)
-        {
-            if (className.contains(forbidden.key))
-            {
-                error(path,forbidden.msg);
-            }
-        }
+        return allowJRuby;
     }
 
-    @Override
-    public void visitWebInfClassResource(String path, String resourcePath, File resourceFile)
+    public boolean isAllowJython()
     {
-        super.visitWebInfClassResource(path,resourcePath,resourceFile);
+        return allowJython;
     }
 
-    @Override
-    public void visitWebInfLibJar(String path, File archive, JarFile jar)
+    public boolean isAllowShell()
     {
-        iterateArchive(path,archive,jar);
+        return allowShell;
     }
 
     private void iterateArchive(String path, File archive, ZipFile zip)
@@ -216,15 +162,71 @@ public class NoScriptingRule extends AbstractRule
         }
     }
 
-    private void checkArchiveClassname(String path, File archive, String name)
+    public void setAllowBeanshell(boolean allowBeanshell)
     {
-        String className = name.replace("/",".");
-        if (className.endsWith(".class"))
-        {
-            className = className.substring(0,className.length() - 6);
-        }
+        this.allowBeanshell = allowBeanshell;
+    }
 
-        validateClassname(path + "!/" + name,className);
+    public void setAllowGroovy(boolean allowGroovy)
+    {
+        this.allowGroovy = allowGroovy;
+    }
+
+    public void setAllowJRuby(boolean allowJruby)
+    {
+        this.allowJRuby = allowJruby;
+    }
+
+    public void setAllowJython(boolean allowJython)
+    {
+        this.allowJython = allowJython;
+    }
+
+    public void setAllowShell(boolean allowShell)
+    {
+        this.allowShell = allowShell;
+    }
+
+    private void validateClassname(String path, String className)
+    {
+        for (Forbidden forbidden : forbiddenClassIds)
+        {
+            if (className.contains(forbidden.key))
+            {
+                error(path,forbidden.msg);
+            }
+        }
+    }
+
+    @Override
+    public void visitFile(String path, File dir, File file)
+    {
+        String name = file.getName().toLowerCase();
+        for (Forbidden forbidden : forbiddenFileExtensions)
+        {
+            if (name.endsWith(forbidden.key))
+            {
+                error(path,forbidden.msg);
+            }
+        }
+    }
+
+    @Override
+    public void visitWebInfClass(String path, String className, File classFile)
+    {
+        validateClassname(path,className);
+    }
+
+    @Override
+    public void visitWebInfClassResource(String path, String resourcePath, File resourceFile)
+    {
+        super.visitWebInfClassResource(path,resourcePath,resourceFile);
+    }
+
+    @Override
+    public void visitWebInfLibJar(String path, File archive, JarFile jar)
+    {
+        iterateArchive(path,archive,jar);
     }
 
     @Override

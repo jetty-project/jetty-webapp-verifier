@@ -77,13 +77,13 @@ public class ForbiddenClassesRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitWebInfClass(String path, String className, File classFile)
+    public void visitArchiveClass(String path, String className, ZipFile archive, ZipEntry archiveEntry)
     {
         validateClassname(path,className);
     }
 
     @Override
-    public void visitArchiveClass(String path, String className, ZipFile archive, ZipEntry archiveEntry)
+    public void visitWebInfClass(String path, String className, File classFile)
     {
         validateClassname(path,className);
     }

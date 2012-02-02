@@ -21,25 +21,25 @@ import org.mortbay.jetty.webapp.verifier.RuleAssert;
 
 public class NoScriptingRuleTest extends AbstractTestWebappVerifier
 {
-	@Test
-    public void testJRubyConfiguration() throws Exception
-    {
-        RuleAssert.assertIntegration("no_scripting_jruby");
-    }
-
-	@Test
-    public void testJythonConfiguration() throws Exception
-    {
-        RuleAssert.assertIntegration("no_scripting_jython");
-    }
-
-	@Test
+    @Test
     public void testGroovyConfiguration() throws Exception
     {
         RuleAssert.assertIntegration("no_scripting_groovy");
     }
 
-	@Test
+    @Test
+    public void testJRubyConfiguration() throws Exception
+    {
+        RuleAssert.assertIntegration("no_scripting_jruby");
+    }
+
+    @Test
+    public void testJythonConfiguration() throws Exception
+    {
+        RuleAssert.assertIntegration("no_scripting_jython");
+    }
+
+    @Test
     public void testShellConfiguration() throws Exception
     {
         RuleAssert.assertIntegration("no_scripting_shell");

@@ -29,34 +29,26 @@ import org.eclipse.jetty.xml.XmlConfiguration;
  */
 public class RuleSet
 {
+    public static RuleSet load(File configuration) throws Exception
+    {
+        return load(configuration.toURL());
+    }
+
+    public static RuleSet load(URI configuration) throws Exception
+    {
+        return load(configuration.toURL());
+    }
+
+    public static RuleSet load(URL configuration) throws Exception
+    {
+        XmlConfiguration xml;
+        xml = new XmlConfiguration(configuration);
+        return (RuleSet)xml.configure();
+    }
+
     private String name;
+
     private List<Rule> rules = new ArrayList<Rule>();
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    public List<Rule> getRules()
-    {
-        return rules;
-    }
-
-    public void setRules(List<Rule> rules)
-    {
-        this.rules = rules;
-    }
-
-    public void setRules(Rule[] ruleArray)
-    {
-        this.rules.clear();
-        this.rules.addAll(Arrays.asList(ruleArray));
-    }
 
     public void addRule(Rule rule)
     {
@@ -70,20 +62,29 @@ public class RuleSet
         return webappVerifier;
     }
 
-    public static RuleSet load(URL configuration) throws Exception
+    public String getName()
     {
-        XmlConfiguration xml;
-        xml = new XmlConfiguration(configuration);
-        return (RuleSet)xml.configure();
+        return name;
     }
 
-    public static RuleSet load(URI configuration) throws Exception
+    public List<Rule> getRules()
     {
-        return load(configuration.toURL());
+        return rules;
     }
 
-    public static RuleSet load(File configuration) throws Exception
+    public void setName(String name)
     {
-        return load(configuration.toURL());
+        this.name = name;
+    }
+
+    public void setRules(List<Rule> rules)
+    {
+        this.rules = rules;
+    }
+
+    public void setRules(Rule[] ruleArray)
+    {
+        this.rules.clear();
+        this.rules.addAll(Arrays.asList(ruleArray));
     }
 }

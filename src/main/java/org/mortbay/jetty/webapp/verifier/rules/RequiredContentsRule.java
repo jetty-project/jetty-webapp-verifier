@@ -33,11 +33,13 @@ public class RequiredContentsRule extends AbstractRule
         _paths.add(path);
     }
 
+    @Override
     public String getDescription()
     {
         return "Ensures that requred content is present";
     }
 
+    @Override
     public String getName()
     {
         return "required-content";
@@ -48,7 +50,7 @@ public class RequiredContentsRule extends AbstractRule
     {
         if (path.equals(ROOT_PATH))
         {
-            File root = new File(dir, path);
+            File root = new File(dir,path);
 
             for (String expectedPath : _paths)
             {

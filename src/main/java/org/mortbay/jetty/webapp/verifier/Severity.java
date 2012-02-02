@@ -17,7 +17,7 @@ package org.mortbay.jetty.webapp.verifier;
 
 public enum Severity
 {
-    WARNING, ERROR;
+    ERROR, WARNING;
 
     public static Severity parse(String value)
     {

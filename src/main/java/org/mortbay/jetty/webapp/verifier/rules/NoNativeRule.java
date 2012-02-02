@@ -43,11 +43,11 @@ public class NoNativeRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitFile(String path, File dir, File file)
+    public void visitArchiveResource(String path, ZipFile zip, ZipEntry entry)
     {
         for (String pattern : nativePatterns)
         {
-            if (PathGlob.match(pattern,path))
+            if (PathGlob.match(pattern,entry.getName()))
             {
                 error(path,"Native code is forbidden");
             }
@@ -55,11 +55,11 @@ public class NoNativeRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitArchiveResource(String path, ZipFile zip, ZipEntry entry)
+    public void visitFile(String path, File dir, File file)
     {
         for (String pattern : nativePatterns)
         {
-            if (PathGlob.match(pattern,entry.getName()))
+            if (PathGlob.match(pattern,path))
             {
                 error(path,"Native code is forbidden");
             }

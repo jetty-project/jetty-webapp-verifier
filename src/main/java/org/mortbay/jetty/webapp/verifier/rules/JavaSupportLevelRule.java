@@ -38,12 +38,6 @@ public class JavaSupportLevelRule extends AbstractArchiveScanningRule
             return classVersion;
         }
 
-        @Override
-        public void visit(int version, int access, String name, String signature, String superName, String[] interfaces)
-        {
-            this.classVersion = getJavaClassVersion(version);
-        }
-
         private double getJavaClassVersion(int version)
         {
             int major = version & 0xFFFF;
@@ -94,6 +88,12 @@ public class JavaSupportLevelRule extends AbstractArchiveScanningRule
         {
             this.classVersion = (-1);
         }
+
+        @Override
+        public void visit(int version, int access, String name, String signature, String superName, String[] interfaces)
+        {
+            this.classVersion = getJavaClassVersion(version);
+        }
     }
 
     private double supportedVersion = 1.5;
@@ -122,19 +122,12 @@ public class JavaSupportLevelRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitWebappStart(String path, File dir)
-    {
-        visitor = new ClassVersionVisitor();
-    }
-
-
-    @Override
-    public void visitWebInfClass(String path, String className, File classFile)
+    public void visitArchiveClass(String path, String className, ZipFile archive, ZipEntry archiveEntry)
     {
         try
         {
             visitor.reset();
-            ASMUtil.visitClassFile(classFile,visitor,0);
+            ASMUtil.visitClass(archive.getInputStream(archiveEntry),visitor,0);
             if (visitor.classVersion > supportedVersion)
             {
                 error(path,"Class is compiled for java version [" + visitor.classVersion + "] which is over supported java version [" + supportedVersion + "]");
@@ -147,12 +140,18 @@ public class JavaSupportLevelRule extends AbstractArchiveScanningRule
     }
 
     @Override
-    public void visitArchiveClass(String path, String className, ZipFile archive, ZipEntry archiveEntry)
+    public void visitWebappStart(String path, File dir)
+    {
+        visitor = new ClassVersionVisitor();
+    }
+
+    @Override
+    public void visitWebInfClass(String path, String className, File classFile)
     {
         try
         {
             visitor.reset();
-            ASMUtil.visitClass(archive.getInputStream(archiveEntry),visitor,0);
+            ASMUtil.visitClassFile(classFile,visitor,0);
             if (visitor.classVersion > supportedVersion)
             {
                 error(path,"Class is compiled for java version [" + visitor.classVersion + "] which is over supported java version [" + supportedVersion + "]");

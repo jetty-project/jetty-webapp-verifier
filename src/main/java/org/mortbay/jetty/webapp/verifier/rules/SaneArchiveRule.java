@@ -40,11 +40,13 @@ import org.mortbay.jetty.webapp.verifier.AbstractRule;
  */
 public class SaneArchiveRule extends AbstractRule
 {
+    @Override
     public String getDescription()
     {
         return "Basic archive (jar & war) sanity checks";
     }
 
+    @Override
     public String getName()
     {
         return "sane-archive";

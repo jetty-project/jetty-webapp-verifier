@@ -4,8 +4,8 @@ import java.io.File;
 
 public class WebappVerifierCLI
 {
-    private static final String ARG_WEBARCHIVE = "webarchive";
     private static final String ARG_RULESET = "ruleset";
+    private static final String ARG_WEBARCHIVE = "webarchive";
 
     public static void main(String[] args)
     {
